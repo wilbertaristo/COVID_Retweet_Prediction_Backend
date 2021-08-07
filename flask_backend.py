@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, flash, abort,  Response
+from flask import Flask, request, redirect, flash, abort
 from flask_cors import CORS
 from flask_restful import Api
 import os
@@ -10,7 +10,6 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from model import *
 from custom_dataset import *
-from utils import *
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -23,20 +22,18 @@ BASE_PATH = os.path.abspath("./")
 X_test = pd.read_csv("test_samples_preprocessed.csv", index_col=0)
 original_df = pd.read_csv("test_samples_original.csv", index_col=0)
 
-def load_model(path):
-    saved_model = torch.load(path)
-    return saved_model
-
-model = load_model("./4_layer_BN_dropout50_50.pt")
+model_name = f'5_layer_256_BN_dropout'
+model = nn_Regression(input_features = 299, dropout= 0.5, model_name=model_name)
+checkpoint = torch.load("./checkpt_5_layer_256_BN_dropout_470.tar")
+model.load_state_dict(checkpoint['model_state_dict'])
 
 def test_model(model, testloader, device='cuda'):
     model.to(device)
     model.eval()
 
     for tweets, labels in testloader:
-        tweets, labels = tweets.to(device), labels.to(device)
-
-        output = model.forward(tweets.float())
+        tweets, labels = tweets.float().to(device), labels.float().to(device)
+        output = model.forward(tweets)
         return output
 
 def extract_sample_tweets(sample_no):
@@ -60,7 +57,6 @@ def index():
             test_dataset = Custom_Testing_Dataset(tweet_df_to_predict.drop(columns=['tweet_id']),y_test)
             test_loader = DataLoader(test_dataset)
             result = test_model(model, test_loader)
-            print(round(result.item()))
             return str(round(result.item()))
         else:
             flash('No data')
