@@ -19,8 +19,8 @@ app.secret_key = b'secret'
 
 BASE_PATH = os.path.abspath("./")
 
-X_test = pd.read_csv("test_samples_preprocessed.csv", index_col=0)
-original_df = pd.read_csv("test_samples_original.csv", index_col=0)
+X_test = pd.read_csv("final_samples_preprocessed.csv")
+original_df = pd.read_csv("final_samples_original.csv")
 
 model_name = f'5_layer_256_BN_dropout'
 model = nn_Regression(input_features = 299, dropout= 0.5, model_name=model_name)
@@ -37,13 +37,7 @@ def test_model(model, testloader, device='cpu'):
         return output
 
 def extract_sample_tweets(sample_no):
-    df = X_test.sample(sample_no)
-    tweet_ids = df['tweet_id'].tolist()
-    sample_tweets = pd.DataFrame(columns=['tweet_id','username','timestamp','followers','friends',
-                                                  'retweets','favourites','entities','sentiments','mentions',
-                                                  'hashtags','url']) 
-    for tweet_id in tweet_ids:
-        sample_tweets = sample_tweets.append(original_df[(original_df['tweet_id']==tweet_id)])
+    sample_tweets = original_df.sample(sample_no)
     sample_tweets["tweet_id"] = sample_tweets["tweet_id"].astype(str)
     return sample_tweets
 
