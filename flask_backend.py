@@ -24,10 +24,10 @@ original_df = pd.read_csv("test_samples_original.csv", index_col=0)
 
 model_name = f'5_layer_256_BN_dropout'
 model = nn_Regression(input_features = 299, dropout= 0.5, model_name=model_name)
-checkpoint = torch.load("./checkpt_5_layer_256_BN_dropout_470.tar")
+checkpoint = torch.load("./checkpt_5_layer_256_BN_dropout_470.tar", map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
 
-def test_model(model, testloader, device='cuda'):
+def test_model(model, testloader, device='cpu'):
     model.to(device)
     model.eval()
 
